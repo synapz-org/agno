@@ -5,22 +5,50 @@ decentralized AI, blockchain, and biotech projects supported by Synapz.org.
 """
 
 import sys
-from datetime import datetime
 from pathlib import Path
 from textwrap import dedent
+
+from agno.agent import Agent
+from agno.embedder.openai import OpenAIEmbedder
+from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
+from agno.models.openai import OpenAIChat
+from agno.storage.sqlite import SqliteStorage
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.vectordb.lancedb import LanceDb, SearchType
 
 # Add the project root to Python path
 root_dir = str(Path(__file__).parent.parent.parent)
 if root_dir not in sys.path:
     sys.path.insert(0, root_dir)
 
-from agno.agent import Agent
-from agno.models.openai import OpenAIChat
-from agents.utils.source_tracker import SourceTracker
+# Initialize knowledge base with project documentation
+agent_knowledge = PDFUrlKnowledgeBase(
+    urls=[
+        "https://agno-public.s3.amazonaws.com/docs/bittensor.pdf",
+        "https://agno-public.s3.amazonaws.com/docs/polkadot.pdf",
+        "https://agno-public.s3.amazonaws.com/docs/desci.pdf",
+    ],
+    vector_db=LanceDb(
+        uri="tmp/lancedb",
+        table_name="synapz_knowledge",
+        search_type=SearchType.hybrid,
+        embedder=OpenAIEmbedder(id="text-embedding-3-small"),
+    ),
+)
+
+# Initialize storage for session management
+agent_storage = SqliteStorage(table_name="synapz_editor", db_file="tmp/agents.db")
 
 # Create the Synapz Editor agent
 agent = Agent(
+    name="Synapz Editor",
     model=OpenAIChat(id="gpt-4o"),
+    storage=agent_storage,
+    knowledge=agent_knowledge,
+    tools=[DuckDuckGoTools()],
+    show_tool_calls=True,
+    read_chat_history=True,
+    markdown=True,
     instructions=dedent(
         """\
         You are the Synapz Editor, specializing in decentralized AI, blockchain,
@@ -71,95 +99,37 @@ agent = Agent(
         - Use metaphors that connect concepts to everyday experiences
 
         Content structure:
-        - Start with a compelling hook that connects to readers' interests
-        - Break down complex topics into digestible sections
-        - Use specific project examples and case studies
-        - Include practical takeaways and next steps
-        - End with a thought-provoking conclusion
-        - Always include a Sources section with links to references
+        1. Start with a compelling hook that connects to readers' interests
+        2. Break down complex topics into digestible sections
+        3. Use specific project examples and case studies
+        4. Include practical takeaways and next steps
+        5. End with a thought-provoking conclusion
+        6. Always include a Sources section with links to references
 
         Research and fact-checking:
-        - Use the search tool to verify technical information
-        - Find the latest developments in supported projects
-        - Research real-world implementations
-        - Check project statuses and updates
-        - Ensure all technical details are accurate and current
-        - Track and cite all sources used in the content
+        1. First, search the knowledge base for accurate technical information
+        2. If needed, supplement with web searches for:
+           - Latest project developments and updates
+           - Real-world implementations and case studies
+           - Community feedback and adoption metrics
+        3. Always verify technical details with primary sources
+        4. Track and cite all sources used in the content
 
         Remember: Your goal is to foster understanding and adoption of these
         transformative technologies while maintaining Synapz's focus on
         decentralization, intelligence, and human potential.\
     """
     ),
-    tools=[SourceTracker()],
-    show_tool_calls=True,
-    markdown=True,
 )
-
-
-def format_blog_post(title: str, content: str, sources: str) -> str:
-    """Format a blog post with proper metadata and markdown structure."""
-    # Generate a URL-safe slug from the title
-    slug = title.lower().replace(" ", "-").replace(":", "").replace("?", "")
-
-    # Get current date in ISO format
-    current_date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S.000Z")
-
-    # Format the blog post with metadata
-    blog_post = f"""---
-title: "{title}"
-excerpt: "{content.split('\\n')[0]}"
-coverImage: "/assets/blog/{slug}/cover.webp"
-category: "Web3 & AI"
-date: "{current_date}"
-author:
-  name: "Synapz Editor"
-  picture: "/assets/blog/authors/synapz-editor.png"
-ogImage:
-  url: "/assets/blog/{slug}/cover.webp"
----
-
-{content}
-
----
-
-{sources}"""
-
-    return blog_post
-
-
-def save_blog_post(title: str, content: str, sources: str):
-    """Save a blog post to the blog/posts directory."""
-    # Generate a URL-safe slug from the title
-    slug = title.lower().replace(" ", "-").replace(":", "").replace("?", "")
-
-    # Create the post directory
-    post_dir = Path("blog/posts") / slug
-    post_dir.mkdir(parents=True, exist_ok=True)
-
-    # Format and save the blog post
-    blog_post = format_blog_post(title, content, sources)
-    with open(post_dir / "index.md", "w") as f:
-        f.write(blog_post)
-
-    print(f"Blog post saved to: {post_dir}/index.md")
-
 
 # Example usage
 if __name__ == "__main__":
+    # Write a blog post about Bittensor's subnet ecosystem
     response = agent.run(
-        "Write a blog post about the latest developments in Bittensor's subnet "
-        "ecosystem, focusing on Rayon Labs' Squad and its potential impact on "
-        "decentralized AI agent development.",
-        stream=True,
+        "Write a blog post about Bittensor's subnet ecosystem, focusing on its "
+        "role in decentralized AI development and real-world applications."
     )
 
-    # Get sources from the tool
-    sources = agent.tools[0].format_sources()
-
-    # Save the blog post
-    save_blog_post(
-        "Bittensor's Subnet Ecosystem: Rayon Labs' Squad and the Future of Decentralized AI",
-        response.content,
-        sources,
-    )
+    # Save the response to a file
+    with open("bittensor_subnet_blog.md", "w") as f:
+        f.write(response.content)
