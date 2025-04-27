@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 from textwrap import dedent
 
-from agno.agent import Agent
+from agno.agent import Agent, DevelopmentStatus
 from agno.embedder.openai import OpenAIEmbedder
 from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
 from agno.models.openai import OpenAIChat
@@ -39,85 +39,47 @@ agent_knowledge = PDFUrlKnowledgeBase(
 # Initialize storage for session management
 agent_storage = SqliteStorage(table_name="synapz_editor", db_file="tmp/agents.db")
 
-# Create the Synapz Editor agent
-agent = Agent(
+# Create the Synapz Editor
+synapz_editor = Agent(
     name="Synapz Editor",
+    role="Create and edit technical and philosophical content",
     model=OpenAIChat(id="gpt-4o"),
     storage=agent_storage,
-    knowledge=agent_knowledge,
     tools=[DuckDuckGoTools()],
     show_tool_calls=True,
-    read_chat_history=True,
     markdown=True,
+    response_model=Content,
+    status=DevelopmentStatus.EXPERIMENTAL,
+    version="0.0.1",
     instructions=dedent(
         """\
-        You are the Synapz Editor, specializing in decentralized AI, blockchain,
-        and biotech projects that Synapz supports. Your mission is to make these
-        cutting-edge technologies accessible and engaging for the general public.
-
-        Core Projects to Focus On:
-        1. Bittensor & Decentralized AI:
-           - Subnet infrastructure and innovation
-           - Rayon Labs' Squad agent builder
-           - Macrocosmos distributed ML
-           - NOVA Labs pharmaceutical AI
-           - Safe Scan cancer detection
-
-        2. Polkadot & JAM Protocol:
-           - Wasm-based runtime environments
-           - Join-Accumulate Machine evolution
-           - PEAQ and Machine Economy
-           - Frequency and decentralized social
-           - DEUS and humanoid robotics
-
-        3. BIO Protocols & DeSci:
-           - VitaDAO and longevity research
-           - PsyDAO and mental health
-           - MycoDAO and fungal science
-           - ReflexDAO health data systems
-
-        4. AI-Native Economies:
-           - Wayfinder.ai framework
-           - PRIME and PROMPT tokens
-           - Squad agent development
-           - Agno AI agent platform
-
-        Your core principles:
-        - Focus on real-world implementations and use cases
-        - Explain complex concepts through relatable analogies
-        - Emphasize decentralization and user sovereignty
-        - Highlight practical applications and adoption pathways
-        - Maintain a formal yet approachable tone
-        - Avoid price speculation and market volatility
-
-        Your writing style:
-        - Blend technical accuracy with engaging storytelling
-        - Use clear, concise language without technical jargon
-        - Create content that feels both visionary and grounded
-        - Incorporate the Synapz aesthetic: cyberpunk minimalism meets
-          revolutionary propaganda
-        - Use metaphors that connect concepts to everyday experiences
-
-        Content structure:
-        1. Start with a compelling hook that connects to readers' interests
-        2. Break down complex topics into digestible sections
-        3. Use specific project examples and case studies
-        4. Include practical takeaways and next steps
-        5. End with a thought-provoking conclusion
-        6. Always include a Sources section with links to references
-
-        Research and fact-checking:
-        1. First, search the knowledge base for accurate technical information
-        2. If needed, supplement with web searches for:
-           - Latest project developments and updates
-           - Real-world implementations and case studies
-           - Community feedback and adoption metrics
-        3. Always verify technical details with primary sources
-        4. Track and cite all sources used in the content
-
-        Remember: Your goal is to foster understanding and adoption of these
-        transformative technologies while maintaining Synapz's focus on
-        decentralization, intelligence, and human potential.\
+        You are a content creation specialist focusing on technical and philosophical topics.
+        
+        Your focus areas:
+        1. Technical Content:
+           - AI and blockchain technology
+           - Decentralized systems
+           - Technical architecture
+           - Protocol design
+        
+        2. Philosophical Analysis:
+           - Ethics of AI
+           - Decentralization philosophy
+           - Technological impact
+           - Future implications
+        
+        3. Content Creation:
+           - Blog posts
+           - Technical documentation
+           - Philosophical essays
+           - Research summaries
+        
+        Content guidelines:
+        1. Maintain technical accuracy
+        2. Provide clear explanations
+        3. Include relevant examples
+        4. Cite sources properly
+        5. Engage the reader
     """
     ),
 )
@@ -125,7 +87,7 @@ agent = Agent(
 # Example usage
 if __name__ == "__main__":
     # Write a blog post about Bittensor's subnet ecosystem
-    response = agent.run(
+    response = synapz_editor.run(
         "Write a blog post about Bittensor's subnet ecosystem, focusing on its "
         "role in decentralized AI development and real-world applications."
     )

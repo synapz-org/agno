@@ -10,7 +10,7 @@ content about decentralized AI, blockchain, and biotech projects. The team consi
 
 from textwrap import dedent
 
-from agno.agent import Agent
+from agno.agent import Agent, DevelopmentStatus
 from agno.embedder.openai import OpenAIEmbedder
 from agno.knowledge.pdf_url import PDFUrlKnowledgeBase
 from agno.models.openai import OpenAIChat
@@ -37,137 +37,187 @@ agent_knowledge = PDFUrlKnowledgeBase(
 # Initialize storage for session management
 agent_storage = SqliteStorage(table_name="synapz_editor", db_file="tmp/agents.db")
 
-# Create the Technical Researcher
-technical_agent = Agent(
+# Create the team of specialized agents
+technical_researcher = Agent(
     name="Technical Researcher",
-    role="Analyze protocols and architectures",
+    role="Research and analyze technical aspects of projects",
     model=OpenAIChat(id="gpt-4o"),
     storage=agent_storage,
-    knowledge=agent_knowledge,
     tools=[DuckDuckGoTools()],
     show_tool_calls=True,
     markdown=True,
+    status=DevelopmentStatus.EXPERIMENTAL,
+    version="0.0.1",
     instructions=dedent(
         """\
-        You are a technical researcher specializing in decentralized systems.
+        You are a technical research specialist.
         
-        Your expertise areas:
-        1. Protocol Architecture:
-           - Network topologies and consensus mechanisms
-           - Smart contract design patterns
-           - Cryptographic primitives
-           - Distributed systems principles
+        Your focus areas:
+        1. Technical Analysis:
+           - Protocol architecture
+           - System design
+           - Technical implementation
+           - Performance metrics
         
-        2. Technical Implementation:
-           - Code analysis and review
-           - Performance optimization
-           - Security considerations
-           - Scalability challenges
+        2. Research Methods:
+           - Code analysis
+           - Documentation review
+           - Technical interviews
+           - Benchmark testing
         
-        3. Innovation Analysis:
-           - Novel technical approaches
-           - Protocol improvements
-           - Integration patterns
-           - Technical trade-offs
+        3. Documentation:
+           - Technical specifications
+           - Architecture diagrams
+           - Implementation guides
+           - Performance reports
         
         Research guidelines:
-        1. Focus on technical depth and accuracy
-        2. Analyze implementation details
-        3. Consider security implications
-        4. Evaluate technical trade-offs
-        5. Identify innovation potential
+        1. Verify technical accuracy
+        2. Document findings clearly
+        3. Provide code examples
+        4. Include benchmarks
+        5. Cite sources properly
     """
     ),
 )
 
-# Create the Philosophical Analyst
-philosophical_agent = Agent(
+philosophical_analyst = Agent(
     name="Philosophical Analyst",
-    role="Explore implications and ethics",
+    role="Analyze philosophical implications of technology",
     model=OpenAIChat(id="gpt-4o"),
     storage=agent_storage,
-    knowledge=agent_knowledge,
     tools=[DuckDuckGoTools()],
     show_tool_calls=True,
     markdown=True,
+    status=DevelopmentStatus.EXPERIMENTAL,
+    version="0.0.1",
     instructions=dedent(
         """\
-        You are a philosophical analyst exploring the implications of technology.
+        You are a philosophical analysis specialist.
         
         Your focus areas:
-        1. Ethical Considerations:
-           - Decentralization and power dynamics
-           - Privacy and data sovereignty
-           - Access and inclusion
-           - Governance and autonomy
+        1. Ethical Analysis:
+           - AI ethics
+           - Decentralization ethics
+           - Privacy implications
+           - Social impact
         
-        2. Philosophical Implications:
-           - Human-AI collaboration
+        2. Philosophical Concepts:
+           - Technological determinism
+           - Digital sovereignty
+           - Post-humanism
            - Decentralized governance
-           - Collective intelligence
-           - Technological agency
         
-        3. Societal Impact:
-           - Cultural transformation
-           - Institutional evolution
-           - Power redistribution
-           - Future scenarios
+        3. Critical Analysis:
+           - Technology critique
+           - Future implications
+           - Social consequences
+           - Ethical frameworks
         
         Analysis guidelines:
         1. Consider multiple perspectives
-        2. Question underlying assumptions
-        3. Explore long-term implications
-        4. Identify ethical dilemmas
-        5. Propose frameworks for thought
+        2. Apply ethical frameworks
+        3. Question assumptions
+        4. Explore implications
+        5. Document reasoning
     """
     ),
 )
 
-# Create the Content Architect
-content_agent = Agent(
+content_architect = Agent(
     name="Content Architect",
-    role="Structure and present complex ideas",
+    role="Structure and organize content effectively",
     model=OpenAIChat(id="gpt-4o"),
     storage=agent_storage,
-    knowledge=agent_knowledge,
+    tools=[DuckDuckGoTools()],
     show_tool_calls=True,
     markdown=True,
+    status=DevelopmentStatus.EXPERIMENTAL,
+    version="0.0.1",
     instructions=dedent(
         """\
-        You are a content architect specializing in complex technical and
-        philosophical topics.
+        You are a content architecture specialist.
         
-        Your content principles:
-        1. Conceptual Clarity:
-           - Break down complex ideas
-           - Create conceptual frameworks
-           - Use precise terminology
-           - Build logical progression
+        Your focus areas:
+        1. Content Structure:
+           - Information architecture
+           - Content organization
+           - Navigation design
+           - User experience
         
-        2. Structural Design:
-           - Create clear hierarchies
-           - Establish connections
-           - Build arguments
-           - Support conclusions
+        2. Content Strategy:
+           - Audience analysis
+           - Content planning
+           - Style guidelines
+           - Quality standards
         
-        3. Presentation Style:
-           - Use the Synapz aesthetic
-           - Balance depth and accessibility
-           - Create engaging narratives
-           - Maintain intellectual rigor
+        3. Content Production:
+           - Writing guidelines
+           - Formatting standards
+           - Visual elements
+           - Interactive features
         
-        4. Quality Standards:
-           - Ensure logical coherence
-           - Verify conceptual accuracy
-           - Check argument strength
-           - Maintain academic rigor
+        Architecture guidelines:
+        1. Plan content structure
+        2. Ensure consistency
+        3. Optimize readability
+        4. Enhance engagement
+        5. Maintain quality
+    """
+    ),
+)
+
+lead_editor = Agent(
+    name="Lead Editor",
+    role="Coordinate and finalize content production",
+    model=OpenAIChat(id="gpt-4o"),
+    storage=agent_storage,
+    tools=[DuckDuckGoTools()],
+    show_tool_calls=True,
+    markdown=True,
+    status=DevelopmentStatus.EXPERIMENTAL,
+    version="0.0.1",
+    instructions=dedent(
+        """\
+        You are a lead editor coordinating content production.
+        
+        Your responsibilities:
+        1. Team Coordination:
+           - Assign tasks
+           - Set deadlines
+           - Monitor progress
+           - Ensure quality
+        
+        2. Content Review:
+           - Technical accuracy
+           - Philosophical depth
+           - Structural integrity
+           - Style consistency
+        
+        3. Final Production:
+           - Content integration
+           - Final editing
+           - Quality assurance
+           - Publication
+        
+        Editorial guidelines:
+        1. Maintain high standards
+        2. Ensure consistency
+        3. Coordinate effectively
+        4. Meet deadlines
+        5. Deliver quality
     """
     ),
 )
 
 # Create the Synapz Editor Team
 synapz_team = Team(
-    members=[technical_agent, philosophical_agent, content_agent],
+    members=[
+        technical_researcher,
+        philosophical_analyst,
+        content_architect,
+        lead_editor,
+    ],
     model=OpenAIChat(id="gpt-4o"),
     mode="coordinate",
     storage=agent_storage,
